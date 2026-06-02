@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0a0c0a">
+<meta name="description" content="SP Home Interior — MD Admin Panel">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SP Admin">
+<meta name="mobile-web-app-capable" content="yes">
+<title>SP Home Interior — MD Admin</title>
+
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="../shared/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="192x192" href="../shared/icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="../shared/icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="../shared/icon-512.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #0a0c0a; --bg-2: #0f1410; --surface: #141a15; --surface-2: #1a221b;
+  --line: #243026; --line-soft: #1d271e;
+  --green: #3e7b2d; --green-br: #4e983a; --green-glow: #5fb348; --green-dim: #2a5420;
+  --ink: #eaf2e8; --muted: #8a9a87; --muted-2: #5f6e5d;
+  --amber: #d4920b; --amber-bg: #2a2008; --red: #d65745; --red-bg: #2a1310; --blue: #4a8fc0;
+  --radius: 16px; --shadow: 0 8px 32px rgba(0,0,0,.5);
+  --green-grad: linear-gradient(135deg, #4e983a 0%, #3e7b2d 55%, #2f5e22 100%);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: 'Sora', system-ui, sans-serif;
+  background: radial-gradient(900px 480px at 80% -10%, rgba(78,152,58,.13) 0%, transparent 60%), var(--bg);
+  color: var(--ink); -webkit-font-smoothing: antialiased; min-height: 100vh; }
+.num { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
+.hidden { display: none !important; }
+select, input, button, textarea { font-family: inherit; }
+
+/* Login */
+.login { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+.login-card { background: var(--surface); border: 1px solid var(--line); border-radius: 24px; padding: 36px 30px;
+  width: 100%; max-width: 360px; text-align: center; box-shadow: var(--shadow); }
+.login-card img { width: 80px; height: 80px; object-fit: contain; margin-bottom: 16px; filter: drop-shadow(0 4px 16px rgba(78,152,58,.4)); }
+.login-card h1 { font-size: 20px; font-weight: 700; }
+.login-card p { font-size: 12px; color: var(--green-br); font-weight: 600; margin: 4px 0 24px; letter-spacing: .5px; }
+.pin-input { width: 100%; background: var(--surface-2); border: 1.5px solid var(--line); color: var(--ink);
+  font-size: 24px; text-align: center; letter-spacing: 10px; padding: 16px; border-radius: 14px; font-family: 'JetBrains Mono'; outline: none; }
+.pin-input:focus { border-color: var(--green-br); }
+.login-btn { width: 100%; background: var(--green-grad); color: #fff; border: none; padding: 16px; border-radius: 14px;
+  font-family: inherit; font-weight: 700; font-size: 16px; cursor: pointer; margin-top: 14px; transition: transform .12s; }
+.login-btn:active { transform: scale(.97); }
+
+/* Topbar */
+.topbar { position: sticky; top: 0; z-index: 50; background: linear-gradient(180deg, #0f1410, #0c100c); border-bottom: 1px solid var(--line); backdrop-filter: blur(12px); }
+.topbar-inner { max-width: 1280px; margin: 0 auto; padding: 14px 20px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.tb-logo { width: 42px; height: 42px; object-fit: contain; filter: drop-shadow(0 2px 10px rgba(78,152,58,.4)); }
+.tb-txt h1 { font-size: 16px; font-weight: 700; }
+.tb-txt p { font-size: 11px; color: var(--green-br); font-weight: 600; margin-top: 2px; }
+.tb-spacer { flex: 1; }
+.tb-sel { background: var(--surface-2); color: var(--ink); border: 1px solid var(--line); padding: 9px 13px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; outline: none; }
+.tb-sel:focus { border-color: var(--green-br); }
+/* ✅ FIX: option fallback for Firefox/Safari */
+.tb-sel option { background: #1a221b; color: #eaf2e8; }
+.btn { border: none; cursor: pointer; border-radius: 10px; font-weight: 600; font-size: 13px; padding: 9px 15px;
+  display: inline-flex; align-items: center; gap: 7px; transition: transform .12s; font-family: inherit; }
+.btn:active { transform: translateY(1px); }
+.btn-green { background: var(--green-grad); color: #fff; box-shadow: 0 4px 14px rgba(62,123,45,.4); }
+.btn-ghost { background: var(--surface-2); color: var(--ink); border: 1px solid var(--line); }
+.btn-ghost:hover { background: var(--line-soft); }
+
+/* Tabs */
+.tabs { max-width: 1280px; margin: 16px auto 0; padding: 0 20px; display: flex; gap: 4px; flex-wrap: wrap; }
+.tab { background: transparent; border: none; cursor: pointer; padding: 11px 17px; font-size: 13.5px; font-weight: 600;
+  color: var(--muted); border-radius: 11px 11px 0 0; position: relative; display: flex; align-items: center; gap: 8px;
+  font-family: inherit; transition: color .2s, background .2s; }
+.tab:hover { color: var(--ink); background: rgba(78,152,58,.06); }
+.tab.on { color: var(--green-glow); background: var(--surface); }
+.tab.on::after { content: ""; position: absolute; left: 14px; right: 14px; bottom: -1px; height: 3px; background: var(--green-br); border-radius: 3px; }
+.tab .cnt { font-size: 10.5px; background: var(--amber); color: #1a1400; border-radius: 20px; padding: 1px 7px; font-weight: 700; }
+.tab .cnt.zero { background: var(--line); color: var(--muted); }
+
+main { max-width: 1280px; margin: 0 auto; padding: 0 20px 60px; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 0 var(--radius) var(--radius) var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+.panel-head { padding: 18px 20px; border-bottom: 1px solid var(--line-soft); display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.panel-head h2 { font-size: 16px; font-weight: 700; }
+.panel-head .sub { font-size: 12.5px; color: var(--muted); }
+.panel-head .spacer { flex: 1; }
+
+/* Stats */
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 13px; padding: 18px 20px; }
+.a-stat { border: 1px solid var(--line); border-radius: 13px; padding: 15px; position: relative; overflow: hidden; background: var(--surface-2); }
+.a-stat::before { content: ""; position: absolute; top: 0; left: 0; bottom: 0; width: 4px; background: var(--green); }
+.a-stat.s-amber::before { background: var(--amber); }
+.a-stat .sk { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
+.a-stat .sv { font-size: 23px; font-weight: 700; margin-top: 6px; font-family: 'JetBrains Mono'; letter-spacing: -.5px; }
+
+/* Tables */
+.table-wrap { overflow: auto; }
+table { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 13px; }
+th, td { padding: 10px 12px; text-align: center; border-bottom: 1px solid var(--line-soft); white-space: nowrap; }
+thead th { background: var(--bg-2); color: var(--green-glow); font-weight: 600; font-size: 11.5px; position: sticky; top: 0; }
+tbody tr:hover { background: rgba(78,152,58,.05); }
+td.tc-name { text-align: left; font-weight: 600; }
+td.tc-num { font-family: 'JetBrains Mono'; font-weight: 600; }
+td.tc-net { color: var(--green-glow); font-weight: 700; }
+td.tc-gross { color: var(--ink); font-weight: 700; }
+td.tc-adv { color: var(--amber); }
+tfoot td { background: var(--bg-2); color: var(--green-glow); font-weight: 700; font-family: 'JetBrains Mono'; position: sticky; bottom: 0; }
+td.tc-in { color: var(--green-glow); } td.tc-miss { color: var(--muted-2); }
+.wno { font-family: 'JetBrains Mono'; color: var(--green-br); font-weight: 700; font-size: 11px; }
+.dh { min-width: 32px; }
+
+/* Request cards */
+.req-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; padding: 18px; }
+.rq-card { background: var(--surface-2); border: 1px solid var(--line); border-radius: 14px; padding: 16px; position: relative; }
+.rq-card-top { display: flex; align-items: center; gap: 11px; margin-bottom: 12px; }
+.rq-ico { width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center; font-size: 18px; flex: none; }
+.rq-ico-leave { background: rgba(212,146,11,.14); color: var(--amber); }
+.rq-ico-adv { background: rgba(78,152,58,.14); color: var(--green-glow); }
+.rq-name { font-size: 14px; font-weight: 700; }
+.rq-meta { font-size: 11px; color: var(--muted); }
+.rq-body { font-size: 13px; color: var(--ink); background: var(--bg-2); border-radius: 10px; padding: 11px; margin-bottom: 12px; }
+.rq-big { font-size: 19px; font-weight: 700; font-family: 'JetBrains Mono'; color: var(--green-glow); }
+.rq-reason { font-size: 12px; color: var(--muted); margin-top: 5px; font-style: italic; }
+.rq-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+.rq-actions button { padding: 11px; border-radius: 10px; border: none; font-family: inherit; font-weight: 700; font-size: 13px; cursor: pointer; }
+.rq-approve { background: var(--green-grad); color: #fff; }
+.rq-reject { background: var(--red-bg); color: var(--red); border: 1px solid #5a2820 !important; }
+.rq-badge { position: absolute; top: 14px; right: 14px; font-size: 10.5px; font-weight: 700; padding: 4px 10px; border-radius: 20px; }
+.rq-badge.appr { background: rgba(78,152,58,.16); color: var(--green-glow); }
+.rq-badge.rejt { background: var(--red-bg); color: var(--red); }
+
+/* Photo proof */
+.proof-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; padding: 18px; }
+.proof-card { background: var(--surface-2); border: 1px solid var(--line); border-radius: 13px; overflow: hidden; cursor: pointer; transition: transform .15s, border-color .2s; }
+.proof-card:hover { transform: translateY(-2px); border-color: var(--green-dim); }
+.proof-card img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; background: #000; }
+.proof-info { padding: 10px 12px; }
+.proof-wname { font-size: 12.5px; font-weight: 600; }
+.proof-meta { font-size: 10.5px; color: var(--muted); margin-top: 3px; }
+.proof-type { display: inline-block; font-size: 9.5px; font-weight: 700; padding: 2px 8px; border-radius: 20px; margin-top: 7px; }
+.proof-type.in { background: rgba(78,152,58,.16); color: var(--green-glow); }
+.proof-type.out { background: var(--surface); color: var(--muted); }
+
+/* Lightbox */
+.lightbox { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,.92); display: flex; flex-direction: column;
+  align-items: center; justify-content: center; padding: 24px; animation: fade .2s; }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+.lightbox img { max-width: 90%; max-height: 70vh; border-radius: 14px; box-shadow: var(--shadow); }
+.lb-info { margin-top: 18px; text-align: center; }
+.lb-info h3 { font-size: 17px; font-weight: 700; }
+.lb-info p { font-size: 13px; color: var(--muted); margin-top: 6px; }
+.lb-info a { color: var(--green-glow); text-decoration: none; font-weight: 600; font-size: 13px; display: inline-block; margin-top: 10px;
+  background: var(--surface-2); padding: 9px 16px; border-radius: 10px; border: 1px solid var(--green-dim); }
+.lb-close { position: absolute; top: 24px; right: 24px; background: rgba(255,255,255,.14); border: none;
+  color: #fff; width: 42px; height: 42px; border-radius: 50%; font-size: 22px; cursor: pointer; }
+
+/* Worker settings table */
+.wtable { width: 100%; border-collapse: collapse; font-size: 13px; }
+.wtable th { background: var(--bg-2); color: var(--green-glow); padding: 11px; text-align: left; font-size: 11.5px; font-weight: 600; }
+.wtable td { padding: 7px 9px; border-bottom: 1px solid var(--line-soft); }
+.wtable input { background: var(--surface-2); border: 1px solid var(--line); color: var(--ink);
+  border-radius: 8px; padding: 8px 10px; font-size: 13px; width: 100%; }
+.wtable input.sal { font-family: 'JetBrains Mono'; text-align: right; font-weight: 600; }
+.wtable input:focus { outline: none; border-color: var(--green-br); }
+.x-btn { background: var(--red-bg); color: var(--red); border: 1px solid #5a2820; border-radius: 8px; width: 32px; height: 32px; cursor: pointer; font-weight: 700; }
+
+/* Filterbar */
+.filterbar { padding: 14px 20px; display: flex; gap: 10px; flex-wrap: wrap; border-bottom: 1px solid var(--line-soft); }
+
+/* Toast */
+.toast { position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--surface-2); border: 1px solid var(--green-dim); color: var(--ink); padding: 13px 22px; border-radius: 13px;
+  font-size: 13.5px; font-weight: 600; box-shadow: var(--shadow); opacity: 0; pointer-events: none; transition: all .3s; z-index: 300; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.err { border-color: #5a2820; }
+.empty-msg { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 13px; }
+
+.pin-reset-btn { background: var(--amber-bg); color: var(--amber-2); border: 1px solid var(--amber); border-radius: 7px; padding: 5px 10px; cursor: pointer; font-size: 12px; font-weight: 600; transition: background .2s; white-space: nowrap; }
+.pin-reset-btn:hover { background: var(--amber); color: #000; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login" id="loginScreen">
+  <div class="login-card">
+    <img id="loginLogo" alt="SP Home Interior" width="80" height="80">
+    <h1>MD Admin Panel</h1>
+    <p>SP HOME INTERIOR</p>
+    <input class="pin-input" id="pinInput" type="password" inputmode="numeric" maxlength="6" placeholder="••••" aria-label="Admin PIN">
+    <button class="login-btn" id="loginBtn">Unlock</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="adminApp" class="hidden">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="topbar-inner">
+      <img class="tb-logo" id="tbLogo" alt="SP Home">
+      <div class="tb-txt"><h1>MD Admin Panel</h1><p>SP HOME INTERIOR</p></div>
+      <div class="tb-spacer"></div>
+      <select class="tb-sel" id="monthSel" aria-label="Month"></select>
+      <select class="tb-sel" id="yearSel" aria-label="Year"></select>
+      <button class="btn btn-green" id="exportBtn">⤓ Export CSV</button>
+      <button class="btn btn-ghost" id="refreshBtn">↻ Sync</button>
+      <button class="btn btn-ghost" id="clearBtn" style="color:#d65745">🧹 Clear</button>
+      <button class="btn btn-ghost" id="logoutBtn" aria-label="Logout">⏻</button>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab on" data-tab="payroll">💰 Payroll</button>
+    <button class="tab" data-tab="attendance">📋 Attendance</button>
+    <button class="tab" data-tab="requests">📨 Requests <span class="cnt zero" id="reqCnt">0</span></button>
+    <button class="tab" data-tab="proof">📸 Photo Proof</button>
+    <button class="tab" data-tab="settings">⚙ Workers</button>
+  </div>
+
+  <main>
+
+    <!-- PAYROLL -->
+    <section id="t-payroll" class="panel">
+      <div class="stats" id="payStats">
+        <div class="a-stat"><div class="sk">Loading…</div></div>
+      </div>
+      <div class="panel-head" style="border-top:1px solid var(--line-soft)">
+        <h2 id="payTitle">Payroll</h2>
+        <span class="sub" id="paySub"></span>
+      </div>
+      <div class="table-wrap"><table id="payTable"></table></div>
+    </section>
+
+    <!-- ATTENDANCE -->
+    <section id="t-attendance" class="panel hidden">
+      <div class="panel-head">
+        <h2>📋 Daily Attendance Grid</h2>
+        <span class="sub" id="attSub"></span>
+      </div>
+      <div class="table-wrap"><table id="attTable"></table></div>
+    </section>
+
+    <!-- REQUESTS -->
+    <section id="t-requests" class="panel hidden">
+      <div class="filterbar">
+        <select class="tb-sel" id="reqFilter" aria-label="Filter requests">
+          <option value="pending">⏳ Pending</option>
+          <option value="all">All Requests</option>
+          <option value="approved">✓ Approved</option>
+          <option value="rejected">✕ Rejected</option>
+        </select>
+      </div>
+      <div class="req-grid" id="reqGrid">
+        <div class="empty-msg">Loading requests…</div>
+      </div>
+    </section>
+
+    <!-- PHOTO PROOF -->
+    <section id="t-proof" class="panel hidden">
+      <div class="filterbar">
+        <select class="tb-sel" id="proofWorker" aria-label="Filter by worker">
+          <option value="">All workers</option>
+        </select>
+        <input class="tb-sel" type="date" id="proofDate" aria-label="Filter by date">
+      </div>
+      <div class="proof-grid" id="proofGrid">
+        <div class="empty-msg">Loading photos…</div>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="t-settings" class="panel hidden">
+      <div class="panel-head">
+        <h2>⚙ Worker Roster</h2>
+        <span class="sub">Names &amp; daily salaries</span>
+        <span class="spacer"></span>
+        <!-- ✅ FIX: Save Workers button added -->
+        <button class="btn btn-green" id="saveWorkersBtn">💾 Save Workers</button>
+        <button class="btn btn-ghost" id="addWorkerBtn">+ Add Worker</button>
+      </div>
+      <div class="table-wrap">
+        <table class="wtable">
+          <thead>
+            <tr>
+              <th style="width:90px">Emp No.</th>
+              <th>Name</th>
+              <th style="width:160px">Daily Salary (LKR)</th>
+              <th style="width:130px">PIN</th>
+              <th style="width:50px"></th>
+            </tr>
+          </thead>
+          <tbody id="wtableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+</div><!-- /adminApp -->
+
+<!-- Lightbox -->
+<div class="lightbox hidden" id="lightbox" role="dialog" aria-modal="true">
+  <button class="lb-close" id="lbClose" aria-label="Close">×</button>
+  <img id="lbImg" alt="Attendance photo">
+  <div class="lb-info" id="lbInfo"></div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- ✅ Script load order: config → logo → admin -->
+<script src="../shared/config.js"></script>
+<script src="../shared/logo.js"></script>
+<script src="./admin.js"></script>
+</body>
+</html>

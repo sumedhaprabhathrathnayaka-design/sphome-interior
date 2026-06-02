@@ -1,0 +1,17 @@
+{
+  "name": "SP Home Interior",
+  "short_name": "SP Home",
+  "description": "SP Home Interior Worker Attendance App",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#060a06",
+  "theme_color": "#060a06",
+  "icons": [
+    { "src": "../shared/icon-192.png",     "sizes": "192x192", "type": "image/png" },
+    { "src": "../shared/icon-512.png",     "sizes": "512x512", "type": "image/png" },
+    { "src": "../shared/maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "../shared/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

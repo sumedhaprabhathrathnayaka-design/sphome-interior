@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<!-- ✅ FIX: removed user-scalable=no (accessibility) — zoom allowed -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#060a06">
+<meta name="description" content="SP Home Interior — Worker Attendance App">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SP Home">
+<meta name="mobile-web-app-capable" content="yes">
+<title>SP Home Interior</title>
+
+<!-- ✅ FIX: manifest link was missing -->
+<link rel="manifest" href="./manifest.json">
+
+<!-- ✅ FIX: favicon links were missing -->
+<link rel="apple-touch-icon" href="../shared/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="../shared/icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="../shared/icon-512.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* ═══════════════════════ DESIGN TOKENS ═══════════════════════ */
+:root {
+  --bg: #060a06; --bg-2: #0a0f0a; --bg-3: #0d140d;
+  --surface: #111811; --surface-2: #172017; --surface-3: #1d281d;
+  --line: #1e2e1e; --line-2: #253825;
+  --g1: #2d6622; --g2: #3d8830; --g3: #52a840; --g4: #6fcf57; --g5: #90e070;
+  --g-dim: #1a3d15;
+  --g-grad: linear-gradient(135deg, #52a840 0%, #3d8830 50%, #2d6622 100%);
+  --g-grad-2: linear-gradient(135deg, #6fcf57 0%, #52a840 60%, #3d8830 100%);
+  --ink: #dff0da; --ink-2: #b8d4b2; --muted: #7a9475; --muted-2: #4d6849;
+  --amber: #d4920b; --amber-2: #f0ac1a; --amber-bg: #1e1600;
+  --red: #d65745; --red-bg: #1e0e0a; --blue: #4a8fc0;
+  --radius: 18px; --radius-sm: 12px;
+  --shadow: 0 8px 32px rgba(0,0,0,.6);
+  --shadow-green: 0 0 24px rgba(82,168,64,.25);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overscroll-behavior-y: none; }
+body {
+  font-family: 'Sora', system-ui, sans-serif;
+  background:
+    radial-gradient(ellipse 600px 350px at 50% 0%, rgba(82,168,64,.18) 0%, transparent 70%),
+    radial-gradient(ellipse 400px 300px at 100% 100%, rgba(61,136,48,.12) 0%, transparent 60%),
+    var(--bg);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.num { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
+.hidden { display: none !important; }
+select, input, button, textarea { font-family: inherit; }
+
+/* ═══════════════════════ WORKER APP ═══════════════════════ */
+.w-app { max-width: 460px; margin: 0 auto; padding: 0 16px; min-height: 100vh; display: flex; flex-direction: column; }
+
+/* Header */
+.w-hdr { padding: calc(env(safe-area-inset-top) + 20px) 4px 8px; text-align: center; }
+.w-hdr img { width: 72px; height: 72px; object-fit: contain; filter: drop-shadow(0 4px 18px rgba(82,168,64,.55)); }
+.w-hdr h1 { font-size: 17px; font-weight: 800; letter-spacing: -.2px; margin-top: 7px;
+  background: var(--g-grad-2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.w-hdr p { font-size: 10.5px; color: var(--g3); font-weight: 600; letter-spacing: .8px; margin-top: 2px; }
+
+/* Clock */
+.clock-row { margin-top: 12px; display: flex; align-items: center; justify-content: center; gap: 12px; }
+.clock-row .ct { font-size: 34px; font-weight: 800; font-family: 'JetBrains Mono';
+  background: var(--g-grad-2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  letter-spacing: -1.5px; line-height: 1; filter: drop-shadow(0 0 12px rgba(111,207,87,.3)); }
+.clock-row .dt { font-size: 11.5px; color: var(--muted); font-weight: 600; line-height: 1.4; text-align: left; }
+
+/* Sync bar */
+.sync-bar { margin: 10px auto 0; font-size: 11px; color: var(--muted); display: flex; align-items: center; justify-content: center; gap: 7px;
+  background: var(--surface); border: 1px solid var(--line); padding: 6px 14px; border-radius: 20px; }
+.sync-bar .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted-2); flex: none; }
+.sync-bar.online .dot { background: var(--g4); box-shadow: 0 0 8px var(--g4); }
+.sync-bar.offline .dot { background: var(--amber); }
+
+/* Cards */
+.w-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 18px; margin-top: 13px; position: relative; overflow: hidden; }
+.w-card::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(82,168,64,.4), transparent); }
+.card-lbl { font-size: 10.5px; color: var(--g3); font-weight: 700; text-transform: uppercase; letter-spacing: .8px; margin-bottom: 9px; display: block; }
+
+/* Worker select */
+.sel-wrap { position: relative; }
+.sel-wrap select { width: 100%; appearance: none; background: var(--surface-2); border: 1.5px solid var(--line-2);
+  color: var(--ink); font-size: 15.5px; font-weight: 600; padding: 15px 44px 15px 16px; border-radius: 13px; cursor: pointer; outline: none;
+  transition: border-color .2s, box-shadow .2s; }
+.sel-wrap select:focus { border-color: var(--g3); box-shadow: 0 0 0 3px rgba(82,168,64,.15); }
+.sel-wrap::after { content: ""; position: absolute; right: 17px; top: 50%; width: 9px; height: 9px;
+  border-right: 2.5px solid var(--g3); border-bottom: 2.5px solid var(--g3); transform: translateY(-65%) rotate(45deg); pointer-events: none; }
+/* ✅ FIX: CSS variables on <option> don't work in Firefox/Safari — use fallback color */
+.sel-wrap select option { background: #172017; color: #dff0da; }
+
+/* Locked placeholder */
+.locked-ph { text-align: center; padding: 30px 20px; color: var(--muted); margin-top: 10px; }
+.locked-ph .lk-ico { font-size: 40px; margin-bottom: 10px; opacity: .5; }
+.locked-ph p { font-size: 13px; line-height: 1.7; color: var(--muted); }
+
+/* Change PIN btn */
+.change-pin-btn { width: 100%; background: none; border: 1.5px solid var(--line-2); color: var(--muted);
+  border-radius: 11px; padding: 11px; font-size: 12.5px; font-weight: 600; cursor: pointer; margin-top: 10px;
+  transition: border-color .2s, color .2s, background .2s; display: flex; align-items: center; justify-content: center; gap: 7px; }
+.change-pin-btn:hover { border-color: var(--g-dim); color: var(--g4); background: rgba(82,168,64,.06); }
+
+/* Selfie zone */
+.selfie-zone { margin-top: 12px; border-radius: 16px; overflow: hidden; position: relative; background: #000;
+  aspect-ratio: 1; border: 2.5px solid var(--g2); display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 0 1px rgba(82,168,64,.2), var(--shadow); }
+.selfie-zone.live { border-color: var(--g4); box-shadow: 0 0 0 1px var(--g4), var(--shadow-green); }
+#wVideo, #wPreview { width: 100%; height: 100%; object-fit: cover; }
+/* ✅ FIX: mirror only applied to front cam via JS now */
+.selfie-ph { text-align: center; color: var(--muted); padding: 28px; }
+.selfie-ph .sph-ico { font-size: 42px; opacity: .4; margin-bottom: 8px; }
+.selfie-ph p { font-size: 12.5px; }
+.cam-frame { position: absolute; inset: 0; pointer-events: none; border-radius: 14px; }
+.cam-frame::before, .cam-frame::after { content: ""; position: absolute; width: 28px; height: 28px; border: 3px solid var(--g4); }
+.cam-frame::before { top: 10px; left: 10px; border-right: none; border-bottom: none; border-radius: 7px 0 0 0; }
+.cam-frame::after { bottom: 10px; right: 10px; border-left: none; border-top: none; border-radius: 0 0 7px 0; }
+
+.loc-chip { position: absolute; left: 10px; right: 10px; bottom: 10px; background: rgba(6,10,6,.85);
+  border: 1px solid var(--g-dim); border-radius: 11px; padding: 9px 13px; display: flex; align-items: center; gap: 9px; backdrop-filter: blur(8px); font-size: 11.5px; }
+.loc-chip .loc-txt { flex: 1; color: var(--ink-2); }
+.loc-chip .loc-txt b { color: var(--g4); }
+
+/* Camera buttons */
+.cam-btns { display: grid; gap: 9px; margin-top: 10px; }
+.cam-btns.two { grid-template-columns: 1fr 1fr; }
+.cam-btns.three { grid-template-columns: 1fr 1fr 1fr; }
+.wbtn { border: none; cursor: pointer; border-radius: 13px; font-weight: 700; font-size: 14px;
+  padding: 15px; display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: transform .12s, opacity .2s, box-shadow .2s; }
+.wbtn:active { transform: scale(.96); }
+.wbtn:disabled { opacity: .3; cursor: not-allowed; }
+.wbtn-cam { background: var(--surface-2); color: var(--ink); border: 1.5px solid var(--line-2); }
+.wbtn-cap { background: var(--g-grad); color: #fff; box-shadow: 0 6px 20px rgba(45,102,34,.5); }
+.wbtn-ret { background: var(--surface-2); color: var(--ink); border: 1.5px solid var(--line-2); }
+.wbtn-tog { background: var(--surface-3); color: var(--muted); border: 1.5px solid var(--line); font-size: 12px; padding: 10px; }
+
+/* Status banner */
+.status-banner { margin-top: 12px; border-radius: 13px; padding: 13px 16px; display: flex; align-items: center; gap: 12px;
+  border: 1px solid var(--line-2); background: var(--surface-2); }
+.status-banner.clocked-in { background: rgba(82,168,64,.09); border-color: var(--g-dim); }
+.sdot { width: 10px; height: 10px; border-radius: 50%; background: var(--muted-2); flex: none; }
+.status-banner.clocked-in .sdot { background: var(--g4); box-shadow: 0 0 10px var(--g4); }
+.stt-main { font-size: 13px; font-weight: 700; }
+.stt-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+/* Clock action buttons */
+.clock-row-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; margin-top: 12px; }
+.clock-btn { border: none; cursor: pointer; border-radius: 15px; padding: 20px 12px; font-family: inherit;
+  display: flex; flex-direction: column; align-items: center; gap: 7px; font-weight: 800; font-size: 14px;
+  transition: transform .12s, opacity .2s, box-shadow .2s; position: relative; overflow: hidden; }
+.clock-btn:active { transform: scale(.96); }
+.clock-btn:disabled { opacity: .28; cursor: not-allowed; }
+.clock-btn .cico { font-size: 22px; }
+.btn-in { background: var(--g-grad); color: #fff; box-shadow: 0 8px 24px rgba(45,102,34,.55); }
+.btn-out { background: linear-gradient(135deg, #7a3a32, #5a2820); color: #fff; box-shadow: 0 8px 24px rgba(90,40,32,.4); }
+
+/* Advance card */
+.adv-desc { font-size: 11.5px; color: var(--muted); margin: 6px 0 11px; line-height: 1.6; }
+.adv-input { width: 100%; background: var(--surface-2); border: 1.5px solid var(--line-2); color: var(--ink);
+  padding: 14px; border-radius: 12px; font-family: 'JetBrains Mono'; font-size: 16px; font-weight: 600; outline: none; margin-bottom: 9px;
+  transition: border-color .2s, box-shadow .2s; }
+.adv-input:focus { border-color: var(--amber); box-shadow: 0 0 0 3px rgba(212,146,11,.12); }
+.wbtn-adv { background: linear-gradient(135deg, var(--amber-2), var(--amber)); color: #1a1200; width: 100%;
+  box-shadow: 0 5px 18px rgba(212,146,11,.3); }
+
+/* Quick row */
+.quick-row { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; margin-top: 12px; }
+.qbtn { background: var(--surface); border: 1px solid var(--line-2); border-radius: 14px; padding: 15px 12px; cursor: pointer;
+  color: var(--ink); display: flex; align-items: center; gap: 10px; transition: transform .12s, border-color .2s, background .2s; }
+.qbtn:active { transform: scale(.97); }
+.qbtn:hover { background: var(--surface-2); border-color: var(--line); }
+.qbtn .qi { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; font-size: 16px; flex: none; }
+.qi-leave { background: rgba(212,146,11,.14); }
+.qi-rec { background: rgba(74,143,192,.14); }
+.qbtn .qt { font-size: 12.5px; font-weight: 600; }
+.qbtn .qs { font-size: 10px; color: var(--muted); margin-top: 1px; }
+
+/* Footer */
+.w-footer { text-align: center; padding: 22px 10px 28px; font-size: 10.5px; color: var(--muted-2); line-height: 1.8; }
+
+/* ═══════════════════════ PIN MODAL ═══════════════════════ */
+.pin-modal { position: fixed; inset: 0; z-index: 500; background: rgba(0,0,0,.85); backdrop-filter: blur(10px);
+  display: flex; align-items: center; justify-content: center; padding: 20px; }
+.pin-sheet { width: 100%; max-width: 320px; background: var(--bg-3); border: 1px solid var(--line-2); border-radius: 24px;
+  padding: 28px 22px 22px; box-shadow: var(--shadow), var(--shadow-green); animation: pinPop .25s cubic-bezier(.2,.8,.2,1); }
+@keyframes pinPop { from { transform: scale(.88); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.pin-worker-lbl { font-size: 11px; color: var(--g3); font-weight: 700; text-align: center; letter-spacing: .6px; margin-bottom: 4px; text-transform: uppercase; }
+.pin-title { font-size: 19px; font-weight: 800; text-align: center; margin-bottom: 3px; }
+.pin-subtitle { font-size: 11.5px; color: var(--muted); text-align: center; margin-bottom: 20px; line-height: 1.5; }
+.pin-dots { display: flex; justify-content: center; gap: 16px; margin-bottom: 6px; }
+.pin-dot { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--line-2); background: transparent;
+  transition: all .18s cubic-bezier(.2,.8,.2,1); }
+.pin-dot.filled { background: var(--g4); border-color: var(--g4); box-shadow: 0 0 12px rgba(111,207,87,.5), 0 0 24px rgba(111,207,87,.2); transform: scale(1.15); }
+.pin-error { height: 18px; font-size: 11.5px; color: var(--red); text-align: center; margin-bottom: 10px; font-weight: 600; }
+.pin-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; margin-bottom: 10px; }
+.pin-key { background: var(--surface-2); border: 1.5px solid var(--line-2); color: var(--ink);
+  font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: 700; border-radius: 14px;
+  padding: 17px 0; cursor: pointer; transition: transform .1s, background .15s, border-color .15s; text-align: center; }
+.pin-key:active { transform: scale(.91); background: var(--surface-3); border-color: var(--g2); }
+.pin-key.pk-0 { background: var(--surface-3); }
+.pin-key.pk-del { font-size: 18px; color: var(--muted); }
+.pin-key.pk-empty { visibility: hidden; pointer-events: none; }
+.pin-cancel { width: 100%; background: none; border: none; color: var(--muted-2); font-family: inherit; font-size: 12px;
+  padding: 8px; cursor: pointer; border-radius: 10px; transition: color .2s; }
+.pin-cancel:hover { color: var(--muted); }
+
+/* ═══════════════════════ SHARED MODALS / SHEETS ═══════════════════════ */
+.modal-overlay { position: fixed; inset: 0; z-index: 150; background: rgba(0,0,0,.7); backdrop-filter: blur(5px);
+  display: flex; align-items: flex-end; justify-content: center; }
+.bottom-sheet { width: 100%; max-width: 460px; background: var(--bg-2); border: 1px solid var(--line);
+  border-radius: 24px 24px 0 0; padding: 8px 20px calc(env(safe-area-inset-bottom) + 24px);
+  max-height: 90vh; overflow-y: auto; animation: sheetUp .3s cubic-bezier(.2,.8,.2,1); }
+@keyframes sheetUp { from { transform: translateY(100%); } to { transform: none; } }
+.sheet-handle { width: 40px; height: 4px; background: var(--line-2); border-radius: 4px; margin: 8px auto 16px; }
+.sheet-title { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+.sheet-sub { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+.field { margin-bottom: 13px; }
+.field label { font-size: 11.5px; color: var(--muted); font-weight: 600; display: block; margin-bottom: 7px; }
+.field input, .field select, .field textarea {
+  width: 100%; background: var(--surface); border: 1.5px solid var(--line-2);
+  color: var(--ink); padding: 13px; border-radius: 11px; font-size: 14.5px; outline: none; transition: border-color .2s; }
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--g3); }
+/* ✅ FIX: option fallback for Firefox/Safari */
+.field select option { background: #111811; color: #dff0da; }
+.field textarea { resize: vertical; min-height: 66px; }
+.sheet-submit { width: 100%; background: var(--g-grad); color: #fff; border: none; padding: 16px; border-radius: 13px;
+  font-weight: 700; font-size: 15px; cursor: pointer; margin-top: 6px; box-shadow: 0 5px 16px rgba(45,102,34,.45); }
+.sheet-error { font-size: 12px; color: var(--red); margin-top: 6px; min-height: 18px; }
+
+/* Records */
+.rec-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+.rec-tab { flex: 1; padding: 9px; border-radius: 10px; border: 1.5px solid var(--line-2);
+  background: var(--surface); color: var(--muted); font-weight: 600; font-size: 11.5px; cursor: pointer; transition: all .2s; }
+.rec-tab.on { background: rgba(82,168,64,.12); color: var(--g4); border-color: var(--g3); }
+
+/* Activity list */
+.act-item { background: var(--surface); border: 1px solid var(--line-2); border-radius: 12px; padding: 12px 14px;
+  margin-bottom: 8px; display: flex; align-items: center; gap: 11px; }
+.act-ico { width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center; font-size: 14px; flex: none; }
+.ai-clock { background: rgba(74,143,192,.14); color: var(--blue); }
+.ai-leave { background: rgba(212,146,11,.14); color: var(--amber); }
+.ai-adv { background: rgba(82,168,64,.14); color: var(--g4); }
+.act-mid { flex: 1; }
+.act-title { font-size: 12.5px; font-weight: 600; }
+.act-sub { font-size: 10.5px; color: var(--muted); margin-top: 1px; }
+.act-badge { font-size: 9.5px; font-weight: 700; padding: 3px 9px; border-radius: 20px; }
+.badge-pending { background: var(--amber-bg); color: var(--amber); }
+.badge-approved { background: rgba(82,168,64,.14); color: var(--g4); }
+.badge-rejected { background: var(--red-bg); color: var(--red); }
+
+/* Toast */
+.toast { position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--surface-2); border: 1px solid var(--g-dim); color: var(--ink); padding: 13px 22px; border-radius: 13px;
+  font-size: 13px; font-weight: 600; box-shadow: var(--shadow); opacity: 0; pointer-events: none;
+  transition: all .3s cubic-bezier(.2,.8,.2,1); z-index: 600; max-width: 90%; text-align: center; white-space: nowrap; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.err { border-color: #5a2820; }
+
+.empty-msg { text-align: center; padding: 28px; color: var(--muted); font-size: 12.5px; }
+</style>
+</head>
+<body>
+
+<div class="w-app">
+
+  <!-- Header -->
+  <header class="w-hdr">
+    <img id="wLogo" alt="SP Home Interior Logo" width="72" height="72">
+    <h1>SP Home Interior</h1>
+    <p>WORKER PORTAL</p>
+  </header>
+
+  <!-- Clock -->
+  <div class="clock-row">
+    <span class="ct num" id="clockTime">00:00:00</span>
+    <div class="dt" id="clockDate"></div>
+  </div>
+
+  <!-- Sync status -->
+  <div class="sync-bar" id="syncBar">
+    <span class="dot"></span>
+    <span class="sync-txt">Connecting…</span>
+  </div>
+
+  <!-- Worker select -->
+  <div class="w-card">
+    <span class="card-lbl">Select Worker</span>
+    <div class="sel-wrap">
+      <select id="workerSel" aria-label="Select your name">
+        <option value="">— Select Your Name —</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Worker section (hidden until selected) -->
+  <div id="workerSection" class="hidden">
+
+    <!-- Camera / Selfie -->
+    <div class="w-card">
+      <span class="card-lbl">📸 Photo Verification</span>
+      <div class="selfie-zone" id="selfieZone">
+        <video id="wVideo" autoplay playsinline muted class="hidden"></video>
+        <img id="wPreview" alt="Captured photo" class="hidden">
+        <div class="selfie-ph" id="selfiePh">
+          <div class="sph-ico">📷</div>
+          <p>Tap camera to take selfie</p>
+        </div>
+        <div class="cam-frame"></div>
+        <div class="loc-chip hidden" id="locChip">
+          <span class="loc-txt">📍 Getting location…</span>
+        </div>
+      </div>
+
+      <!-- Camera buttons -->
+      <div class="cam-btns three" style="margin-top:10px">
+        <button class="wbtn wbtn-cam" id="btnCamera">📷 Camera</button>
+        <button class="wbtn wbtn-cap" id="btnCapture" disabled>⊙ Capture</button>
+        <button class="wbtn wbtn-tog" id="btnCamToggle" disabled>🔄 Flip</button>
+      </div>
+      <div class="cam-btns" style="margin-top:8px">
+        <button class="wbtn wbtn-ret" id="btnRetake" disabled>↩ Retake</button>
+      </div>
+    </div>
+
+    <!-- Status -->
+    <div class="status-banner" id="statusBanner">
+      <div class="sdot"></div>
+      <div>
+        <div class="stt-main">⚪ Not Clocked In</div>
+        <div class="stt-sub">Tap Clock In to start</div>
+      </div>
+    </div>
+
+    <!-- Clock In / Out -->
+    <div class="clock-row-btns">
+      <button class="clock-btn btn-in" id="btnClockIn">
+        <span class="cico">🟢</span>Clock In
+      </button>
+      <button class="clock-btn btn-out" id="btnClockOut" disabled>
+        <span class="cico">🔴</span>Clock Out
+      </button>
+    </div>
+
+    <!-- Advance request -->
+    <div class="w-card">
+      <span class="card-lbl">💰 Advance Request</span>
+      <p class="adv-desc">Request salary advance — subject to MD approval.</p>
+      <input class="adv-input num" type="number" id="advanceAmount" placeholder="Amount (Rs.)" min="0" inputmode="numeric">
+      <textarea class="adv-input" id="advanceReason" placeholder="Reason (optional)" rows="2" style="font-family:inherit;font-size:13px;font-weight:400"></textarea>
+      <button class="wbtn wbtn-adv" id="btnAdvanceSubmit">Send Request</button>
+    </div>
+
+    <!-- Quick actions -->
+    <div class="quick-row">
+      <button class="qbtn" id="btnLeave">
+        <div class="qi qi-leave">🌿</div>
+        <div><div class="qt">Leave Request</div><div class="qs">Apply for leave</div></div>
+      </button>
+      <button class="qbtn" id="btnRecords">
+        <div class="qi qi-rec">📊</div>
+        <div><div class="qt">My Records</div><div class="qs">View history</div></div>
+      </button>
+    </div>
+
+    <!-- Change PIN -->
+    <button class="change-pin-btn" id="btnChangePin">🔑 Change My PIN</button>
+
+  </div><!-- /workerSection -->
+
+  <div class="locked-ph" id="lockedPh">
+    <div class="lk-ico">👆</div>
+    <p>Select your name above to access the worker portal.</p>
+  </div>
+
+  <footer class="w-footer">SP Home Interior · Worker Portal<br>© 2025 SP Home</footer>
+
+</div><!-- /w-app -->
+
+<!-- ═══ PIN MODAL ═══ -->
+<div class="pin-modal hidden" id="pinModal" role="dialog" aria-modal="true" aria-label="Enter PIN">
+  <div class="pin-sheet">
+    <div class="pin-worker-lbl" id="pinWorkerLbl"></div>
+    <div class="pin-title">Enter Your PIN</div>
+    <div class="pin-subtitle">4-digit PIN to confirm action</div>
+    <div class="pin-dots" id="pinDots">
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+    </div>
+    <div class="pin-error" id="pinError"></div>
+    <div class="pin-keypad">
+      <button class="pin-key" data-key="1">1</button>
+      <button class="pin-key" data-key="2">2</button>
+      <button class="pin-key" data-key="3">3</button>
+      <button class="pin-key" data-key="4">4</button>
+      <button class="pin-key" data-key="5">5</button>
+      <button class="pin-key" data-key="6">6</button>
+      <button class="pin-key" data-key="7">7</button>
+      <button class="pin-key" data-key="8">8</button>
+      <button class="pin-key" data-key="9">9</button>
+      <button class="pin-key pk-empty" aria-hidden="true"></button>
+      <button class="pin-key pk-0" data-key="0">0</button>
+      <button class="pin-key pk-del" data-key="del" aria-label="Delete">⌫</button>
+    </div>
+    <button class="pin-cancel" id="pinCancel">Cancel</button>
+  </div>
+</div>
+
+<!-- ═══ CHANGE PIN SHEET ═══ -->
+<div class="modal-overlay hidden" id="changePinSheet">
+  <div class="bottom-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">🔑 Change PIN</div>
+    <div class="sheet-sub">Set a new 4-digit PIN for your account</div>
+    <div class="field">
+      <label>Current PIN</label>
+      <input type="password" id="oldPinInput" inputmode="numeric" maxlength="4" placeholder="••••">
+    </div>
+    <div class="field">
+      <label>New PIN (4 digits)</label>
+      <input type="password" id="newPinInput" inputmode="numeric" maxlength="4" placeholder="••••">
+    </div>
+    <div class="field">
+      <label>Confirm New PIN</label>
+      <input type="password" id="confirmPinInput" inputmode="numeric" maxlength="4" placeholder="••••">
+    </div>
+    <div class="sheet-error" id="changePinError"></div>
+    <button class="sheet-submit" id="submitPinChange">Change PIN</button>
+    <button class="pin-cancel" id="closePinSheet" style="margin-top:8px">Cancel</button>
+  </div>
+</div>
+
+<!-- ═══ LEAVE SHEET ═══ -->
+<div class="modal-overlay hidden" id="leaveSheet">
+  <div class="bottom-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">🌿 Leave Request</div>
+    <div class="sheet-sub">Submit a leave request for MD approval</div>
+    <div class="field">
+      <label>Leave Type</label>
+      <select id="leaveType">
+        <option value="casual">Casual Leave</option>
+        <option value="sick">Sick Leave</option>
+        <option value="annual">Annual Leave</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>From Date</label>
+      <input type="date" id="leaveFrom">
+    </div>
+    <div class="field">
+      <label>To Date</label>
+      <input type="date" id="leaveTo">
+    </div>
+    <div class="field">
+      <label>Reason (optional)</label>
+      <textarea id="leaveReason" rows="3" placeholder="Briefly describe your reason…"></textarea>
+    </div>
+    <button class="sheet-submit" id="submitLeave">Submit Leave Request</button>
+    <button class="pin-cancel" id="closeLeaveSheet" style="margin-top:8px">Cancel</button>
+  </div>
+</div>
+
+<!-- ═══ RECORDS SHEET ═══ -->
+<div class="modal-overlay hidden" id="recordsSheet">
+  <div class="bottom-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">📊 My Records</div>
+    <div class="rec-tabs">
+      <button class="rec-tab on" data-tab="attendance">Attendance</button>
+      <button class="rec-tab" data-tab="leaves">Leaves</button>
+      <button class="rec-tab" data-tab="advances">Advances</button>
+    </div>
+    <div id="recordsContent"><div class="empty-msg">Loading…</div></div>
+    <button class="pin-cancel" id="closeRecordsSheet" style="margin-top:12px">Close</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- ✅ Script load order: config → logo → app -->
+<script src="../shared/config.js"></script>
+<script src="../shared/logo.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>
