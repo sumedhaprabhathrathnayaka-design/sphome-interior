@@ -6,7 +6,7 @@
 const CONFIG = {
   // ✅ YOUR GOOGLE APPS SCRIPT BACKEND URL
   // (Replace with your own /exec URL after deploying Code.gs)
-  BACKEND_URL: 'https://script.google.com/macros/s/AKfycbwk0JWInd52x1RZ9NHEvbt7C7ax22W7cj-ehB20sESz3Pp7Tt3k2DUuVbKu-ioJRpM6qw/exec',
+  BACKEND_URL: 'https://script.google.com/macros/s/AKfycbwdzSEz-OmQbFm7Z-D8FtUWVH0SBwsueDCXconlqjETXxFtO0-IGzTnXqpqrlniNM_uZw/exec',
 
   // Admin PIN — unlock the MD Admin Panel
   ADMIN_PIN: '1234',
